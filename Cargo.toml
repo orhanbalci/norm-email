@@ -4,5 +4,8 @@ edition = "2018"
 name = "norm-email"
 version = "0.1.0"
 [dependencies]
+anyhow = "*"
 chrono = "*"
+enumflags2 = "*"
 lazy_static = "*"
+trust-dns-resolver = "*"

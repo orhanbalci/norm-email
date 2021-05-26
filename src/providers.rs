@@ -1,6 +1,10 @@
+use enumflags2::{bitflags, make_bitflags, BitFlags};
 use std::collections::HashSet;
+use std::fmt::Debug;
 
-#[derive(Eq, PartialEq, Hash)]
+#[bitflags]
+#[repr(u16)]
+#[derive(Eq, PartialEq, Hash, Debug, Copy, Clone)]
 pub enum Rules {
     DashAddressing,
     PlusAddressing,
@@ -8,57 +12,62 @@ pub enum Rules {
     StripPeriods,
 }
 
+#[derive(Debug, PartialEq, Eq)]
 pub struct Provider {
-    pub rules: HashSet<Rules>,
+    pub rules: BitFlags<Rules>,
     pub mx_domains: HashSet<String>,
+    pub name: String,
 }
 
 lazy_static! {
-    static ref APPLE_PROVIDER: Provider = Provider {
-        rules: vec![Rules::PlusAddressing].into_iter().collect(),
-        mx_domains: vec!["icloud.com".into()].into_iter().collect()
+    pub static ref APPLE_PROVIDER: Provider = Provider {
+        rules: Rules::PlusAddressing.into(),
+        mx_domains: vec!["icloud.com".into()].into_iter().collect(),
+        name: "APPLE".into()
     };
-    static ref FAST_MAIL_PROVIDER: Provider = Provider {
-        rules: vec![Rules::PlusAddressing, Rules::LocalPartAsHostName]
-            .into_iter()
-            .collect(),
+    pub static ref FAST_MAIL_PROVIDER: Provider = Provider {
+        rules: Rules::PlusAddressing | Rules::LocalPartAsHostName,
         mx_domains: vec!["messagingengine.com".into()].into_iter().collect(),
+        name: "FAST_MAIL".into()
     };
-    static ref GOOGLE_PROVIDER: Provider = Provider {
-        rules: vec![Rules::PlusAddressing, Rules::StripPeriods]
-            .into_iter()
-            .collect(),
+    pub static ref GOOGLE_PROVIDER: Provider = Provider {
+        rules: Rules::PlusAddressing | Rules::StripPeriods,
         mx_domains: vec!["google.com".into()].into_iter().collect(),
+        name: "GOOGLE".into()
     };
-    static ref MICROSOFT_PROVIDER: Provider = Provider {
-        rules: vec![Rules::PlusAddressing].into_iter().collect(),
+    pub static ref MICROSOFT_PROVIDER: Provider = Provider {
+        rules: Rules::PlusAddressing.into(),
         mx_domains: vec!["outlook.com".into()].into_iter().collect(),
+        name: "MICROSOFT".into()
     };
-    static ref PROTON_MAIL_PROVIDER: Provider = Provider {
-        rules: vec![Rules::PlusAddressing].into_iter().collect(),
+    pub static ref PROTON_MAIL_PROVIDER: Provider = Provider {
+        rules: Rules::PlusAddressing.into(),
         mx_domains: vec!["protonmail.ch".into()].into_iter().collect(),
+        name: "PROTONMAIL".into()
     };
-    static ref RACKSPACE_PROVIDER: Provider = Provider {
-        rules: vec![Rules::PlusAddressing].into_iter().collect(),
+    pub static ref RACKSPACE_PROVIDER: Provider = Provider {
+        rules: Rules::PlusAddressing.into(),
         mx_domains: vec!["emailsrvr.com".into()].into_iter().collect(),
+        name: "RACKSPACE".into()
     };
-    static ref YAHOO_PROVIDER: Provider = Provider {
-        rules: vec![Rules::DashAddressing, Rules::StripPeriods]
-            .into_iter()
-            .collect(),
+    pub static ref YAHOO_PROVIDER: Provider = Provider {
+        rules: Rules::DashAddressing | Rules::StripPeriods,
         mx_domains: vec!["yahoodns.net".into()].into_iter().collect(),
+        name: "YAHOO".into()
     };
-    static ref YANDEX_PROVIDER: Provider = Provider {
-        rules: vec![Rules::PlusAddressing].into_iter().collect(),
+    pub static ref YANDEX_PROVIDER: Provider = Provider {
+        rules: Rules::PlusAddressing.into(),
         mx_domains: vec!["mx.yandex.net".into(), "yandex.ru".into()]
             .into_iter()
             .collect(),
+        name: "YANDEX".into()
     };
-    static ref ZOHOO_PROVIDER: Provider = Provider {
-        rules: vec![Rules::PlusAddressing].into_iter().collect(),
+    pub static ref ZOHOO_PROVIDER: Provider = Provider {
+        rules: Rules::PlusAddressing.into(),
         mx_domains: vec!["zoho.com".into()].into_iter().collect(),
+        name: "ZOHOO".into()
     };
-    static ref PROVIDERS: Vec<&'static Provider> = vec![
+    pub static ref PROVIDERS: Vec<&'static Provider> = vec![
         &APPLE_PROVIDER,
         &FAST_MAIL_PROVIDER,
         &GOOGLE_PROVIDER,
