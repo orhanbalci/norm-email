@@ -1,6 +1,9 @@
 #[macro_use]
 extern crate lazy_static;
 
+use std::convert::From;
+use std::fmt::Display;
+use std::fmt::Formatter;
 use trust_dns_resolver::config::*;
 use trust_dns_resolver::Resolver as MxResolver;
 
@@ -11,7 +14,26 @@ mod providers;
 use providers::Provider;
 use providers::PROVIDERS;
 
-type MxRecord = (u16, String);
+#[derive(Debug)]
+pub struct MxRecord {
+    pub priority: u16,
+    pub host: String,
+}
+
+impl From<(u16, String)> for MxRecord {
+    fn from(a: (u16, String)) -> Self {
+        Self {
+            priority: a.0,
+            host: a.1,
+        }
+    }
+}
+
+impl Display for MxRecord {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        write!(f, "Priority: {} Host: {}", self.priority, self.host)
+    }
+}
 
 pub struct LookupResult {
     pub address: String,
@@ -53,12 +75,12 @@ impl Normalizer {
         let mx_records = self.resolver.mx_lookup(domain_name)?;
         Ok(mx_records
             .iter()
-            .map(|mx| (mx.preference(), mx.exchange().to_string()))
+            .map(|mx| (mx.preference(), mx.exchange().to_string()).into())
             .collect::<Vec<MxRecord>>())
     }
 
     pub fn lookup_provider(mx_records: &[MxRecord]) -> Option<&'static Provider> {
-        for (_priority, host) in mx_records {
+        for MxRecord { priority, host } in mx_records {
             for &p in PROVIDERS.iter() {
                 for domain in p.mx_domains.iter() {
                     let doted_domain = format!("{}{}", domain, '.');
