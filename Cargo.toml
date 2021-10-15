@@ -1,7 +1,7 @@
 [package]
 edition = "2018"
 name = "norm-email"
-version = "0.1.0"
+version = "0.1.1-alpha.0"
 authors = ["orhanbalci@gmail.com <orhanbalci@gmail.com>"]
 description = "strip email provider defined behaviour from email addresses"
 repository = "https://github.com/orhanbalci/norm-email.git"
