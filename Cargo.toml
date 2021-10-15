@@ -1,8 +1,16 @@
 [package]
-authors = ["orhan"]
 edition = "2018"
 name = "norm-email"
 version = "0.1.0"
+authors = ["orhanbalci@gmail.com <orhanbalci@gmail.com>"]
+description = "strip email provider defined behaviour from email addresses"
+repository = "https://github.com/orhanbalci/norm-email.git"
+homepage = "https://github.com/orhanbalci"
+keywords = ["emoji","unicode"]
+license = "MIT"
+readme = "README.md"
+categories = ["text-processing"]
+
 
 [dependencies]
 anyhow = "*"
