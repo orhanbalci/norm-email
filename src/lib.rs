@@ -1,4 +1,3 @@
-
 #[macro_use]
 extern crate lazy_static;
 
@@ -33,7 +32,7 @@ pub enum NormalizerError {
     InvalidEmailAt { email: String },
 }
 
-impl Default for Normalizer{
+impl Default for Normalizer {
     fn default() -> Self {
         Self::new()
     }
@@ -107,7 +106,7 @@ impl Normalizer {
             }
 
             if provider.rules.contains(providers::Rules::StripPeriods) {
-                let new_local = local.replace(".","");
+                let new_local = local.replace(".", "");
                 normalized_address = format!("{}@{}", new_local, domain);
             }
 
@@ -115,7 +114,7 @@ impl Normalizer {
                 mailbox_provider: Some(provider.name.clone()),
                 mx_records,
                 address: email_address.into(),
-                normalized_address
+                normalized_address,
             })
         } else {
             Result::Ok(LookupResult {
@@ -134,7 +133,10 @@ impl Normalizer {
                 email: email_address.to_string(),
             })
         } else {
-            Result::Ok((parts[0].to_string().to_lowercase(), parts[1].to_string().to_lowercase()))
+            Result::Ok((
+                parts[0].to_string().to_lowercase(),
+                parts[1].to_string().to_lowercase(),
+            ))
         }
     }
 
