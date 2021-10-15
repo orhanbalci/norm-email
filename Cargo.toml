@@ -13,11 +13,11 @@ categories = ["text-processing"]
 
 
 [dependencies]
-anyhow = "*"
-enumflags2 = "*"
-lazy_static = "*"
-trust-dns-resolver = "*"
-thiserror = "*"
+anyhow = "1.0.44"
+enumflags2 = "0.7.1"
+lazy_static = "1.1.1"
+trust-dns-resolver = "0.20.3"
+thiserror = "1.0.30"
 
 [dev-dependencies]
 uuid = {version="*", features=["v4"]}
