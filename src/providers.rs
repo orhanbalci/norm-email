@@ -51,7 +51,7 @@ lazy_static! {
         name: "RACKSPACE".into()
     };
     pub static ref YAHOO_PROVIDER: Provider = Provider {
-        rules: Rules::DashAddressing | Rules::StripPeriods,
+        rules: Rules::DashAddressing.into(),
         mx_domains: vec!["yahoodns.net".into()].into_iter().collect(),
         name: "YAHOO".into()
     };

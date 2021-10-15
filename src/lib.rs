@@ -64,8 +64,6 @@ impl Normalizer {
                     let doted_domain = format!("{}{}", domain, '.');
                     if host.ends_with(&doted_domain) {
                         return Some(p);
-                    } else {
-                        println!("{} {}", host, domain)
                     }
                 }
             }
@@ -74,42 +72,41 @@ impl Normalizer {
     }
 
     pub fn normalize(&self, email_address: &str) -> AResult<LookupResult> {
-        let (local, domain) = Normalizer::get_local_and_domain(email_address)?;
+        let (mut local, mut domain) = Normalizer::get_local_and_domain(email_address)?;
         let mx_records = self.mx_records(&domain)?;
         if let Some(provider) = Normalizer::lookup_provider(&mx_records[..]) {
-            let mut normalized_address = String::new();
+            let normalized_address;
             if provider
                 .rules
                 .contains(providers::Rules::LocalPartAsHostName)
             {
                 let (new_local_part, new_domain_part) =
                     Normalizer::local_part_as_hostname(&local, &domain);
-                normalized_address = format!("{}@{}", new_local_part, new_domain_part);
+                local = new_local_part;
+                domain = new_domain_part;
+                // normalized_address = format!("{}@{}", new_local_part, new_domain_part);
             }
 
             if provider.rules.contains(providers::Rules::DashAddressing) {
-                let mut local_parts = local.split('-').collect::<Vec<_>>();
-                if let Some(lp) = local_parts.pop() {
-                    normalized_address = format!("{}@{}", lp, domain);
-                } else {
-                    normalized_address = email_address.into();
+                let local_parts = local.split('-').collect::<Vec<_>>();
+                if let Some(lp) = local_parts.first() {
+                    local = lp.to_string();
                 }
             }
 
             if provider.rules.contains(providers::Rules::PlusAddressing) {
-                let mut local_parts = local.split('+').collect::<Vec<_>>();
-                if let Some(lp) = local_parts.pop() {
-                    normalized_address = format!("{}@{}", lp, domain);
-                } else {
-                    normalized_address = email_address.into();
+                let local_parts = local.split('+').collect::<Vec<_>>();
+                if let Some(lp) = local_parts.first() {
+                    local = lp.to_string();
                 }
             }
 
             if provider.rules.contains(providers::Rules::StripPeriods) {
                 let new_local = local.replace(".", "");
-                normalized_address = format!("{}@{}", new_local, domain);
+                local = new_local;
             }
 
+            normalized_address = format!("{}@{}", local, domain);
             Result::Ok(LookupResult {
                 mailbox_provider: Some(provider.name.clone()),
                 mx_records,
@@ -155,19 +152,17 @@ impl Normalizer {
 
 #[cfg(test)]
 mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
+    use super::Normalizer;
+    use uuid::Uuid;
 
     #[test]
     fn mx_records() {
         use super::Normalizer;
         let n = Normalizer::new();
         let records = n.mx_records("gmail.com").unwrap();
-        for (a, b) in records {
-            println!("{} {}", a, b)
-        }
+        // for (a, b) in records {
+        //     println!("{} {}", a, b)
+        // }
         assert!(true)
     }
 
@@ -177,7 +172,90 @@ mod tests {
         let n = Normalizer::new();
         let provider =
             Normalizer::lookup_provider(&n.mx_records("gmail.com").unwrap()[..]).unwrap();
-        println!("{:?}", provider);
+        // println!("{:?}", provider);
         assert!(true)
+    }
+
+    #[test]
+    fn apple() {
+        let local = Uuid::new_v4();
+        let domain = "icloud.com";
+
+        let normalizer = Normalizer::new();
+        let result = normalizer
+            .normalize(&format!("{}+test@{}", local, domain))
+            .unwrap();
+        assert_eq!(result.normalized_address, format!("{}@{}", local, domain));
+    }
+
+    #[test]
+    fn gmail() {
+        let local = Uuid::new_v4();
+        let domain = "gmail.com";
+        let normalizer = Normalizer::new();
+        let result = normalizer
+            .normalize(&format!("{}+test@{}", local, domain))
+            .unwrap();
+        println!("{:?}", result.mx_records);
+        println!("{:?}", result.mailbox_provider);
+        assert_eq!(result.normalized_address, format!("{}@{}", local, domain));
+    }
+
+    #[test]
+    fn fastmail() {
+        let local = Uuid::new_v4();
+        let domain = "fastmail.com";
+        let normalizer = Normalizer::new();
+        let result = normalizer
+            .normalize(&format!("{}+test@{}", local, domain))
+            .unwrap();
+        println!("{:?}", result.mx_records);
+        println!("{:?}", result.mailbox_provider);
+        assert_eq!(result.normalized_address, format!("{}@{}", local, domain));
+    }
+
+    #[test]
+    fn fastmail_second() {
+        let local = Uuid::new_v4();
+        let domain_local = Uuid::new_v4();
+        let domain = "fastmail.com";
+        let normalizer = Normalizer::new();
+        let result = normalizer
+            .normalize(&format!("{}@{}.{}", local, domain_local, domain))
+            .unwrap();
+        println!("{:?}", result.mx_records);
+        println!("{:?}", result.mailbox_provider);
+        assert_eq!(
+            result.normalized_address,
+            format!("{}@{}", domain_local, domain)
+        );
+    }
+
+    #[test]
+    fn yahoo() {
+        let normalizer = Normalizer::new();
+        let result = normalizer.normalize("a.b.c.d+tag@yahoo.com").unwrap();
+        assert_eq!("a.b.c.d+tag@yahoo.com", result.normalized_address);
+    }
+
+    #[test]
+    fn yahoo_second() {
+        let normalizer = Normalizer::new();
+        let result = normalizer.normalize("a-b.c-tag@yahoo.ro").unwrap();
+        assert_eq!("a@yahoo.ro", result.normalized_address);
+    }
+
+    #[test]
+    fn microsoft_first() {
+        let normalizer = Normalizer::new();
+        let result = normalizer.normalize("a.b.c+tag@outlook.com").unwrap();
+        assert_eq!("a.b.c@outlook.com", result.normalized_address);
+    }
+
+    #[test]
+    fn microsoft_second() {
+        let normalizer = Normalizer::new();
+        let result = normalizer.normalize("a.b.c-tag@outlook.com").unwrap();
+        assert_eq!("a.b.c-tag@outlook.com", result.normalized_address);
     }
 }
