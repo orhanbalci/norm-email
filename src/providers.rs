@@ -1,4 +1,4 @@
-use enumflags2::{bitflags, make_bitflags, BitFlags};
+use enumflags2::{bitflags, BitFlags};
 use std::collections::HashSet;
 use std::fmt::Debug;
 
