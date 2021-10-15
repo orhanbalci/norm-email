@@ -14,18 +14,48 @@ Email normalization for your services. This crate is ported from Python library
 
 ```toml
 [dependencies]
-norm-email = "0.1"
+norm-email = {git = "https://github.com/orhanbalci/norm-email"}
 ```
 
 ## 🔧 Example
 
-
-
+```rust
+fn main() {
+    let normalizer = Normalizer::new();
+    let result = normalizer.normalize("orhan.balci@gmail.com").unwrap();
+    println!("{:#?}", result.mx_records);
+    println!("{}", result.mailbox_provider.unwrap());
+    println!("{}", result.normalized_address);
+}
+```
 
 ## 🖨️ Output
 
 ```text
-
+[
+    MxRecord {
+        priority: 30,
+        host: "alt3.gmail-smtp-in.l.google.com.",
+    },
+    MxRecord {
+        priority: 20,
+        host: "alt2.gmail-smtp-in.l.google.com.",
+    },
+    MxRecord {
+        priority: 5,
+        host: "gmail-smtp-in.l.google.com.",
+    },
+    MxRecord {
+        priority: 10,
+        host: "alt1.gmail-smtp-in.l.google.com.",
+    },
+    MxRecord {
+        priority: 40,
+        host: "alt4.gmail-smtp-in.l.google.com.",
+    },
+]
+GOOGLE
+orhanbalci@gmail.com
 ```
 
 
