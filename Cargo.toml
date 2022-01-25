@@ -22,3 +22,6 @@ thiserror = "1.0.30"
 [dev-dependencies]
 uuid = {version="0.8.2", features=["v4"]}
 
+[examples]
+src="main.rs"
+
